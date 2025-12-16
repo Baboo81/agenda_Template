@@ -1,49 +1,145 @@
 @extends('layouts.app')
 
+@section('title', 'Agenda')
+
 @section('content')
-<div class="container py-5">
+<div class="calendar-container">
+
+    {{-- Navigation --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="fw-bold">Mes Événements</h1>
-        <a href="{{ route('events.create') }}" class="btn btn-success">Créer un événement</a>
+        <button class="btn btn-light shadow-sm" id="prevMonth">◀</button>
+
+        <h3 class="fw-bold mb-0" id="currentMonth"></h3>
+
+        <button class="btn btn-light shadow-sm" id="nextMonth">▶</button>
     </div>
 
-    @if (session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
+    {{-- Jours --}}
+    <div class="calendar-weekdays">
+        <div>Lun</div>
+        <div>Mar</div>
+        <div>Mer</div>
+        <div>Jeu</div>
+        <div>Ven</div>
+        <div>Sam</div>
+        <div>Dim</div>
+    </div>
 
-    @if ($events->isEmpty())
-        <p class="text-muted">Aucun événement pour le moment.</p>
-    @else
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Titre</th>
-                    <th>Description</th>
-                    <th>Début</th>
-                    <th>Fin</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($events as $event)
-                    <tr>
-                        <td>{{ $event->title }}</td>
-                        <td>{{ $event->description ?? '-' }}</td>
-                        <td>{{ $event->start_time }}</td>
-                        <td>{{ $event->end_time ?? '-' }}</td>
-                        <td class="d-flex gap-2">
-                            <a href="{{ route('events.edit', $event->id) }}" class="btn btn-primary btn-sm">Éditer</a>
+    {{-- Grille --}}
+    <div class="calendar-grid" id="calendarGrid"></div>
 
-                            <form action="{{ route('events.destroy', $event->id) }}" method="POST" onsubmit="return confirm('Voulez-vous vraiment supprimer cet événement ?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
-                            </form>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    @endif
 </div>
+
+<style>
+.calendar-container {
+    max-width: 900px;
+    margin: auto;
+}
+
+.calendar-weekdays,
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.calendar-weekdays div {
+    text-align: center;
+    font-weight: 600;
+    padding-bottom: 10px;
+    color: #6c757d;
+}
+
+.calendar-day {
+    border: 1px solid #eee;
+    height: 120px;
+    padding: 8px;
+    position: relative;
+    background: white;
+    transition: background .2s;
+}
+
+.calendar-day:hover {
+    background: #f8f9fa;
+    cursor: pointer;
+}
+
+.calendar-day-number {
+    font-weight: 600;
+}
+
+.today {
+    border: 2px solid #0d6efd;
+    border-radius: 6px;
+}
+
+.event-dot {
+    width: 8px;
+    height: 8px;
+    background: #dc3545;
+    border-radius: 50%;
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+}
+</style>
+
+<script>
+let currentDate = new Date();
+
+const monthNames = [
+    "Janvier","Février","Mars","Avril","Mai","Juin",
+    "Juillet","Août","Septembre","Octobre","Novembre","Décembre"
+];
+
+function renderCalendar() {
+    const grid = document.getElementById('calendarGrid');
+    grid.innerHTML = '';
+
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+
+    document.getElementById('currentMonth').innerText =
+        monthNames[month] + ' ' + year;
+
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+
+    let startDay = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
+
+    // Cases vides
+    for (let i = 0; i < startDay; i++) {
+        grid.innerHTML += `<div></div>`;
+    }
+
+    for (let day = 1; day <= lastDay.getDate(); day++) {
+        const today = new Date();
+        const isToday =
+            day === today.getDate() &&
+            month === today.getMonth() &&
+            year === today.getFullYear();
+
+        grid.innerHTML += `
+            <div class="calendar-day ${isToday ? 'today' : ''}">
+                <div class="calendar-day-number">${day}</div>
+
+                ${[5, 12, 18, 25].includes(day)
+                    ? '<div class="event-dot"></div>'
+                    : ''}
+            </div>
+        `;
+    }
+}
+
+document.getElementById('prevMonth').onclick = () => {
+    currentDate.setMonth(currentDate.getMonth() - 1);
+    renderCalendar();
+};
+
+document.getElementById('nextMonth').onclick = () => {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+    renderCalendar();
+};
+
+renderCalendar();
+</script>
 @endsection

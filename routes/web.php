@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Route;
  * CRUD
  */
 //Liste des évènements :
-Route::get('/events', [EventController::class, 'index'])->name('events.index');
+Route::get('/', [EventController::class, 'index'])->name('events.index');
 //Formulaire de création :
 Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
 //Enregistrer un évènement :
