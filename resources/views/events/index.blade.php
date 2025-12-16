@@ -3,122 +3,128 @@
 @section('title', 'Agenda')
 
 @section('content')
-<div class="calendar-container">
+    <div class="calendar-container p-5">
 
-    {{-- Navigation --}}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <button class="btn btn-light shadow-sm" id="prevMonth">◀</button>
+        {{-- Navigation --}}
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <button class="btn btn-light shadow-sm" id="prevMonth">◀</button>
 
-        <h3 class="fw-bold mb-0" id="currentMonth"></h3>
+            <h3 class="fw-bold mb-0" id="currentMonth"></h3>
 
-        <button class="btn btn-light shadow-sm" id="nextMonth">▶</button>
+            <button class="btn btn-light shadow-sm" id="nextMonth">▶</button>
+        </div>
+
+        {{-- Jours --}}
+        <div class="calendar-weekdays">
+            <div>Lun</div>
+            <div>Mar</div>
+            <div>Mer</div>
+            <div>Jeu</div>
+            <div>Ven</div>
+            <div>Sam</div>
+            <div>Dim</div>
+        </div>
+
+        {{-- Grille --}}
+        <div class="calendar-grid" id="calendarGrid"></div>
+
     </div>
 
-    {{-- Jours --}}
-    <div class="calendar-weekdays">
-        <div>Lun</div>
-        <div>Mar</div>
-        <div>Mer</div>
-        <div>Jeu</div>
-        <div>Ven</div>
-        <div>Sam</div>
-        <div>Dim</div>
-    </div>
+    <style>
+        h3 {
+            color: #5f526c
+        }
 
-    {{-- Grille --}}
-    <div class="calendar-grid" id="calendarGrid"></div>
+        .calendar-container {
+            max-width: 900px;
+            margin: auto;
+            border-radius: 22px;
+            background-color: #99b7ef;
+        }
 
-</div>
+        .calendar-weekdays,
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+        }
 
-<style>
-.calendar-container {
-    max-width: 900px;
-    margin: auto;
-}
+        .calendar-weekdays div {
+            text-align: center;
+            font-weight: 600;
+            padding-bottom: 10px;
+            color: #dde5ed;
+        }
 
-.calendar-weekdays,
-.calendar-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-}
+        .calendar-day {
+            border: 1px solid #eee;
+            height: 120px;
+            padding: 8px;
+            position: relative;
+            background: white;
+            transition: background .2s;
+        }
 
-.calendar-weekdays div {
-    text-align: center;
-    font-weight: 600;
-    padding-bottom: 10px;
-    color: #6c757d;
-}
+        .calendar-day:hover {
+            background: #f8f9fa;
+            cursor: pointer;
+        }
 
-.calendar-day {
-    border: 1px solid #eee;
-    height: 120px;
-    padding: 8px;
-    position: relative;
-    background: white;
-    transition: background .2s;
-}
+        .calendar-day-number {
+            font-weight: 600;
+        }
 
-.calendar-day:hover {
-    background: #f8f9fa;
-    cursor: pointer;
-}
+        .today {
+            border: 2px solid #0d6efd;
+            border-radius: 6px;
+        }
 
-.calendar-day-number {
-    font-weight: 600;
-}
+        .event-dot {
+            width: 8px;
+            height: 8px;
+            background: #dc3545;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+        }
+    </style>
 
-.today {
-    border: 2px solid #0d6efd;
-    border-radius: 6px;
-}
+    <script>
+        let currentDate = new Date();
 
-.event-dot {
-    width: 8px;
-    height: 8px;
-    background: #dc3545;
-    border-radius: 50%;
-    position: absolute;
-    bottom: 8px;
-    left: 8px;
-}
-</style>
+        const monthNames = [
+            "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+            "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
+        ];
 
-<script>
-let currentDate = new Date();
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
 
-const monthNames = [
-    "Janvier","Février","Mars","Avril","Mai","Juin",
-    "Juillet","Août","Septembre","Octobre","Novembre","Décembre"
-];
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
 
-function renderCalendar() {
-    const grid = document.getElementById('calendarGrid');
-    grid.innerHTML = '';
+            document.getElementById('currentMonth').innerText =
+                monthNames[month] + ' ' + year;
 
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
 
-    document.getElementById('currentMonth').innerText =
-        monthNames[month] + ' ' + year;
+            let startDay = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
 
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
+            // Cases vides
+            for (let i = 0; i < startDay; i++) {
+                grid.innerHTML += `<div></div>`;
+            }
 
-    let startDay = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const today = new Date();
+                const isToday =
+                    day === today.getDate() &&
+                    month === today.getMonth() &&
+                    year === today.getFullYear();
 
-    // Cases vides
-    for (let i = 0; i < startDay; i++) {
-        grid.innerHTML += `<div></div>`;
-    }
-
-    for (let day = 1; day <= lastDay.getDate(); day++) {
-        const today = new Date();
-        const isToday =
-            day === today.getDate() &&
-            month === today.getMonth() &&
-            year === today.getFullYear();
-
-        grid.innerHTML += `
+                grid.innerHTML += `
             <div class="calendar-day ${isToday ? 'today' : ''}">
                 <div class="calendar-day-number">${day}</div>
 
@@ -127,19 +133,19 @@ function renderCalendar() {
                     : ''}
             </div>
         `;
-    }
-}
+            }
+        }
 
-document.getElementById('prevMonth').onclick = () => {
-    currentDate.setMonth(currentDate.getMonth() - 1);
-    renderCalendar();
-};
+        document.getElementById('prevMonth').onclick = () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        };
 
-document.getElementById('nextMonth').onclick = () => {
-    currentDate.setMonth(currentDate.getMonth() + 1);
-    renderCalendar();
-};
+        document.getElementById('nextMonth').onclick = () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        };
 
-renderCalendar();
-</script>
+        renderCalendar();
+    </script>
 @endsection
