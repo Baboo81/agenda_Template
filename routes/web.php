@@ -2,22 +2,14 @@
 
 use App\Http\Controllers\EventController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AppointmentController;
 
-
-/**
- * CRUD
- */
-//Liste des évènements :
+// Route vers le calendrier :
 Route::get('/', [EventController::class, 'index'])->name('events.index');
-//Formulaire de création :
-Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
-//Enregistrer un évènement :
-Route::post('/events', [EventController::class, 'store'])->name('events.store');
-//Formulaire d'édition :
-Route::get('/events/{event}/edit', [EventController::class, 'edit'])->name('events.edit');
-//Mettre à jour :
-Route::put('/events/{event}', [EventController::class, 'update'])->name('events.update');
-//Supprimer :
-Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
+
+//Routes qui gèrent la prise de RDV :
+Route::post('/appointments', [AppointmentController::class, 'store'])->name('appointments.store');
+Route::get('/appointments/unavailable', [AppointmentController::class, 'unavailableHours'])->name('appointments.unavailable');
+
 
 

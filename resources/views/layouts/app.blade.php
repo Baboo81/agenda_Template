@@ -19,7 +19,6 @@
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a class="nav-link" href="{{ route('events.index') }}">Événements</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ route('events.create') }}">Créer</a></li>
                 </ul>
             </div>
         </div>
